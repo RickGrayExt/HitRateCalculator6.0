@@ -1,14 +1,8 @@
-# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-
-# Copy everything from repo into container
 COPY . .
+RUN dotnet publish ./src/Calculation.Service/Calculation.Service.csproj -c Release -o /out
 
-# Publish the Calculation.Service project
-RUN dotnet publish Calculation.Service/Calculation.Service.csproj -c Release -o /out
-
-# Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /out .

@@ -1,19 +1,23 @@
+using Contracts;
 using MassTransit;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddMassTransit(x =>
+public class StartRunConsumer : IConsumer<StartRunCommand>
 {
-    x.AddConsumer<StartRunConsumer>();
-
-    x.UsingRabbitMq((context, cfg) =>
+    public async Task Consume(ConsumeContext<StartRunCommand> context)
     {
-        cfg.Host("rabbitmq");
-        cfg.ConfigureEndpoints(context);
-    });
-});
+        var cmd = context.Message;
 
-var app = builder.Build();
-app.MapGet("/health", () => "ok");
+        // Example calculation (replace with real logic)
+        var dataset = System.IO.File.ReadAllLines(cmd.DatasetPath).Skip(1);
+        var total = dataset.Count();
+        var hitRate = total > 0 ? (double)new Random().Next(50, 100) / 100 : 0.0;
 
-app.Run("http://0.0.0.0:8080");
+        Console.WriteLine($"✅ Run {cmd.RunId} calculated. Hit Rate = {hitRate:P2}");
+
+        await context.Publish(new HitRateCalculated
+        {
+            RunId = cmd.RunId,
+            HitRate = hitRate
+        });
+    }
+}
