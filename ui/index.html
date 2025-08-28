@@ -67,15 +67,22 @@
           }
         };
         try {
-          const resp = await fetch('https://super-duper-barnacle-4j9rpjg7j9w92v5g-5000.app.github.dev/api/run', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
+          const resp = await fetch('/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-          const data = await resp.json();
-out.textContent = 'Response: ' + JSON.stringify(data, null, 2);
-        } catch (err) { out.textContent = 'Error: ' + err; }
+          const text = await resp.text();
+          try {
+            const json = JSON.parse(text);
+            out.textContent = 'Response:\n' + JSON.stringify(json, null, 2);
+          } catch {
+            out.textContent = 'Response (raw):\n' + text;
+          }
+        } catch (err) {
+          out.textContent = 'Error: ' + err;
+        }
       });
     </script>
   </body>
