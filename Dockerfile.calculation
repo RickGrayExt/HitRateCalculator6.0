@@ -2,11 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy only the source folder to avoid duplicating /src/src
-COPY ./src ./src
+# Copy everything from repo into container
+COPY . .
 
 # Publish the Calculation.Service project
-RUN dotnet publish ./src/Calculation.Service/Calculation.Service.csproj -c Release -o /out
+RUN dotnet publish Calculation.Service/Calculation.Service.csproj -c Release -o /out
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
