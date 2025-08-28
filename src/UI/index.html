@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HitRate UI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    label { display:block; font-weight:600; margin-top:.75rem;}
+    input, select { width:100%; padding:.5rem; border:1px solid #ccc; border-radius:8px;}
+    button { padding:.7rem 1rem; border:0; border-radius:10px; cursor:pointer;}
+    .primary { background:#111827; color:white;}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#f9fafb; padding:.5rem; border-radius:8px;}
+    #result { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>HitRate Calculator</h1>
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Dataset path or URL</label>
+        <input id="dataset" value="/data/DataSetClean.csv"/>
+      </div>
+      <div>
+        <label>Mode</label>
+        <select id="mode">
+          <option value="PTO">PTO (Pick to Order)</option>
+          <option value="PTL">PTL (Pick to Line)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Use seasonality boost</label><select id="useSeason"><option value="true">true</option><option value="false">false</option></select></div>
+      <div><label>Max SKUs per rack</label><input id="maxSkusPerRack" type="number" value="50"/></div>
+    </div>
+    <div class="row">
+      <div><label>Max SKUs per station</label><input id="maxSkusPerStation" type="number" value="100"/></div>
+      <div><label>Max batch lines</label><input id="maxBatchLines" type="number" value="200"/></div>
+    </div>
+    <div class="row">
+      <div><label>Use PTO (true/false)</label><select id="usePto"><option value="true">true</option><option value="false">false</option></select></div>
+      <div><label>Max stations open</label><input id="maxStationsOpen" type="number" value="4"/></div>
+    </div>
+    <div class="row">
+      <div><label>Rack levels</label><input id="rackLevels" type="number" value="5"/></div>
+      <div><label>Slots per level</label><input id="slotsPerLevel" type="number" value="20"/></div>
+    </div>
+    <button class="primary" id="run">Start Run</button>
+  </div>
+
+  <div class="card">
+    <h3>Result</h3>
+    <div id="result" class="mono">Awaiting run...</div>
+  </div>
+
+  <script>
+    const gateway = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000' : window.location.origin.replace(':3000', ':8000');
+
+    document.getElementById('run').addEventListener('click', async () => {
+      const body = {
+        datasetPath: document.getElementById('dataset').value,
+        mode: document.getElementById('mode').value,
+        params: {
+          useSeasonalityBoost: document.getElementById('useSeason').value === 'true',
+          maxSkusPerRack: parseInt(document.getElementById('maxSkusPerRack').value),
+          maxSkusPerStation: parseInt(document.getElementById('maxSkusPerStation').value),
+          maxBatchLines: parseInt(document.getElementById('maxBatchLines').value),
+          usePto: document.getElementById('usePto').value === 'true',
+          maxStationsOpen: parseInt(document.getElementById('maxStationsOpen').value),
+          racksLevels: parseInt(document.getElementById('rackLevels').value),
+          slotsPerLevel: parseInt(document.getElementById('slotsPerLevel').value)
+        }
+      };
+      const res = await fetch(gateway + '/runs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const txt = await res.text();
+      document.getElementById('result').textContent = 'Submitted: ' + txt + '\nCheck Orchestrator logs for HitRateCalculated.';
+    });
+  </script>
+</body>
+</html>

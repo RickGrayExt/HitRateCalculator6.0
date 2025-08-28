@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hit Rate Calculator</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+      .card { max-width: 720px; margin: 0 auto; padding: 1.5rem; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+      label { display:block; margin-top: 1rem; }
+      input, select { width: 100%; padding: .6rem; border-radius: 8px; border: 1px solid #ccc; }
+      button { padding: .8rem 1.2rem; border: 0; border-radius: 10px; cursor: pointer; margin-top: 1rem; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .muted { color: #666; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Hit Rate Calculator</h2>
+      <p class="muted">Dataset defaults to <code>/app/data/DataSetClean.csv</code> inside containers.</p>
+      <form id="runForm">
+        <label>Dataset Path <input type="text" id="datasetPath" placeholder="/app/data/DataSetClean.csv" /></label>
+        <div class="row">
+          <label>Max Stations Open <input type="number" id="maxStationsOpen" value="4" min="1"/></label>
+          <label>Max SKUs per Rack <input type="number" id="maxSkusPerRack" value="50" min="1"/></label>
+        </div>
+        <div class="row">
+          <label>Max SKUs per Station <input type="number" id="maxSkusPerStation" value="100" min="1"/></label>
+          <label>Order Batch Size <input type="number" id="orderBatchSize" value="20" min="1"/></label>
+        </div>
+        <div class="row">
+          <label>Max Orders per Batch <input type="number" id="maxOrdersPerBatch" value="20" min="1"/></label>
+          <label>Max Racks <input type="number" id="maxRacks" value="100" min="1"/></label>
+        </div>
+        <label>Use Intelligent Station Allocation?
+          <select id="useIntelligent"><option value="true">Yes</option><option value="false" selected>No</option></select>
+        </label>
+        <label>Prioritize Hit Rate?
+          <select id="prioritize"><option value="true">Yes</option><option value="false" selected>No</option></select>
+        </label>
+        <label>Mode
+          <select id="mode"><option value="default" selected>default</option><option value="simulation">simulation</option></select>
+        </label>
+        <button type="submit">Start Run</button>
+      </form>
+      <pre id="out"></pre>
+    </div>
+    <script>
+      document.getElementById('runForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const out = document.getElementById('out');
+        out.textContent = 'Submitting...';
+        const runId = crypto.randomUUID();
+        const payload = {
+          runId,
+          datasetPath: document.getElementById('datasetPath').value || '',
+          mode: document.getElementById('mode').value,
+          params: {
+            useIntelligentStationAllocation: document.getElementById('useIntelligent').value === 'true',
+            maxStationsOpen: parseInt(document.getElementById('maxStationsOpen').value),
+            maxSkusPerRack: parseInt(document.getElementById('maxSkusPerRack').value),
+            maxSkusPerStation: parseInt(document.getElementById('maxSkusPerStation').value),
+            prioritizeHitRate: document.getElementById('prioritize').value === 'true',
+            orderBatchSize: parseInt(document.getElementById('orderBatchSize').value),
+            maxOrdersPerBatch: parseInt(document.getElementById('maxOrdersPerBatch').value),
+            maxRacks: parseInt(document.getElementById('maxRacks').value)
+          }
+        };
+        try {
+          const resp = await fetch('https://super-duper-barnacle-4j9rpjg7j9w92v5g-5000.app.github.dev/api/run', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
+});
+
+          const data = await resp.json();
+out.textContent = 'Response: ' + JSON.stringify(data, null, 2);
+        } catch (err) { out.textContent = 'Error: ' + err; }
+      });
+    </script>
+  </body>
+</html>
