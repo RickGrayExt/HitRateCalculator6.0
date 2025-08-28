@@ -32,9 +32,12 @@ app.MapPost("/run", async (StartRunCommand req, IBus bus) =>
     var dataset = string.IsNullOrWhiteSpace(req.DatasetPath) ? "/app/data/DataSetClean.csv" : req.DatasetPath;
     var runId = req.RunId == Guid.Empty ? Guid.NewGuid() : req.RunId;
     var cmd = req with { RunId = runId, DatasetPath = dataset };
+    
     await bus.Publish(cmd);
 
-    return Results.Json(new { runId });
+    // ✅ Always return JSON with runId + status
+    return Results.Json(new { runId, status = "submitted" });
 });
+
 
 app.Run("http://0.0.0.0:8080");
