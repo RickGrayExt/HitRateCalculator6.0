@@ -1,0 +1,9 @@
+{
+  "name": "HitRateCalculator",
+  "forwardPorts": [3000, 5000, 5001],
+  "portsAttributes": {
+    "3000": { "label": "UI", "onAutoForward": "openPreview", "visibility": "public" },
+    "5000": { "label": "Gateway", "visibility": "public" },
+    "5001": { "label": "Orchestrator", "visibility": "public" }
+  }
+}
