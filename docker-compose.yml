@@ -32,3 +32,10 @@ services:
       - "3000:80"
     depends_on:
       - gateway
+    
+  calculation:
+    build:
+      context: .
+      dockerfile: Dockerfile.calculation
+    depends_on:
+      - rabbitmq
